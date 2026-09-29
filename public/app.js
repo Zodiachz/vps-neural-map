@@ -63,7 +63,9 @@
     let renderer;
     try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: qs.has('capture') }); }
     catch (e) { return fatal('WebGL is not available in this browser.'); }
-    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    const dpr = () => Math.min(devicePixelRatio || 1, 2);
+    renderer.setPixelRatio(dpr());
+    const uPR = { value: dpr() }; // shared by both point materials
     renderer.setClearColor(0x000000, 1);
     const scene = new THREE.Scene(); // no fog: fog + additive blending = grey veil
     const camera = new THREE.PerspectiveCamera(58, 1, 1, 12000);
@@ -88,6 +90,7 @@
     function resize() {
       const w = wrap.clientWidth, h = wrap.clientHeight;
       if (!w || !h) return;
+      if (uPR.value !== dpr()) { uPR.value = dpr(); renderer.setPixelRatio(uPR.value); } // window moved to another screen
       renderer.setSize(w, h, false); composer.setSize(w, h); bloom.setSize(w, h);
       camera.aspect = w / h;
       // the header HUD covers the top strip: move the optical centre down under the free area
@@ -218,7 +221,7 @@
           gl_FragColor = vec4(col, a); }`, // AdditiveBlending already scales by alpha
     };
     const pointMaterial = () => new THREE.ShaderMaterial({
-      uniforms: { uPR: { value: renderer.getPixelRatio() } }, vertexShader: NODE_SHADER.vertex, fragmentShader: NODE_SHADER.fragment,
+      uniforms: { uPR }, vertexShader: NODE_SHADER.vertex, fragmentShader: NODE_SHADER.fragment,
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     });
 
@@ -464,9 +467,12 @@
     }
 
     // ---- live pulse ----
+    let polling = false;
     async function poll() {
-      if (document.hidden) return; // background tab: rAF is paused anyway, don't hammer the server
-      let p; try { p = await fetchPulse(); } catch (e) { return; }
+      if (document.hidden || polling) return; // background tab / slow server: never stack requests
+      let p;
+      polling = true;
+      try { p = await fetchPulse(); } catch (e) { return; } finally { polling = false; }
       state.act = p.act || {}; state.traffic = p.traffic || {};
       const hotA = pts.geometry.attributes.hot.array;
       const q = (search.value || '').trim().toLowerCase();
@@ -563,9 +569,12 @@
     }
 
     // ---- graph refresh (positions preserved) ----
+    let refreshing = false;
     async function refreshGraph() {
-      if (document.hidden) return;
-      let g; try { g = await fetchGraph(); } catch (e) { return; }
+      if (document.hidden || refreshing) return;
+      let g;
+      refreshing = true;
+      try { g = await fetchGraph(); } catch (e) { return; } finally { refreshing = false; }
       const changed = buildGraph(g);
       state.sim.nodes(state.nodes);
       state.sim.force('link').links(state.links);
@@ -600,6 +609,7 @@
     window.__nm = { state, select: selectNode, fit: fitCamera, refresh: refreshGraph, settle, camera, controls, setSpin }; // console debugging
     setInterval(poll, 1500);
     setInterval(refreshGraph, 30000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); }); // no stale HUD after a tab switch
     poll();
     requestAnimationFrame(frame);
   }

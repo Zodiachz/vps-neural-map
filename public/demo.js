@@ -24,7 +24,6 @@
   function build() {
     const R = rng(7);
     const ri = (a, b) => a + Math.floor(R() * (b - a + 1));
-    const pick = (a) => a[Math.floor(R() * a.length)];
     const N = new Map(); const L = new Map();
     const node = (id, l, g, t, s, m, p, st) => {
       let n = N.get(id);
