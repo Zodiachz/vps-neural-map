@@ -1,0 +1,53 @@
+{
+  "name": "vps-neural-map",
+  "version": "1.0.0",
+  "description": "Your whole Linux server as a live 3D neural network: processes, services, ports, connections, databases, files, firewall.",
+  "bin": {
+    "vps-neural-map": "bin/vps-neural-map.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "public/",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "start": "node bin/vps-neural-map.js",
+    "demo": "node bin/vps-neural-map.js --demo",
+    "build:vendor": "node scripts/build-vendor.js",
+    "check": "node --check bin/vps-neural-map.js && node --check lib/collect.js && node --check public/app.js && node --check public/demo.js && node scripts/check-demo.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "keywords": [
+    "vps",
+    "server",
+    "monitoring",
+    "visualization",
+    "3d",
+    "threejs",
+    "linux",
+    "devops",
+    "sysadmin",
+    "network-graph"
+  ],
+  "author": "Zodiachz",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zodiachz/vps-neural-map.git"
+  },
+  "homepage": "https://github.com/Zodiachz/vps-neural-map#readme",
+  "devDependencies": {
+    "d3-force-3d": "^3.0.6",
+    "esbuild": "^0.24.2",
+    "three": "0.170.0"
+  }
+}

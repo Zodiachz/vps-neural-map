@@ -1,0 +1,90 @@
+/* vps-neural-map — full-bleed 3D canvas with glass HUD panels. Always dark: it is a night sky. */
+:root{
+  --txt:#dbe4f3; --mut:#8b98ad; --dim:#5d687a; --line:rgba(120,150,210,.22); --acc:#5b8def;
+  --bad:#ff3b57; --warn:#ffb454; --panel:rgba(10,14,24,.62);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#000;color:var(--txt);
+  font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif;overflow:hidden}
+.hidden{display:none!important}
+
+.neural-wrap{position:fixed;inset:0;background:#000;overflow:hidden}
+#nCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#nCanvas:active{cursor:grabbing}
+
+.n-hud{position:absolute;z-index:3;background:var(--panel);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(120,150,210,.16);border-radius:12px;color:var(--txt)}
+.n-top{top:14px;left:14px;right:14px;display:flex;flex-direction:column;gap:8px;padding:10px 14px}
+.n-row1{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.n-title{font-weight:800;font-size:15px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.n-dim{color:var(--mut);font-weight:500;font-size:12px}
+.n-demo{margin-left:6px;font-size:10.5px;font-weight:700;letter-spacing:.6px;color:#05070c;background:var(--warn);border-radius:6px;padding:1px 6px;vertical-align:2px}
+.n-stats{display:flex;gap:4px;flex-wrap:wrap}
+.n-stats:empty{display:none}
+.n-stat{display:flex;flex-direction:column;min-width:86px;padding:2px 12px;border-left:1px solid rgba(120,150,210,.14)}
+.n-stat:first-child{border-left:0;padding-left:0}
+.n-stat span{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
+.n-stat b{font-size:15px;font-variant-numeric:tabular-nums}
+.n-stat i{font-style:normal;font-size:10.5px;color:var(--dim);white-space:nowrap}
+.n-cores{display:flex;align-items:flex-end;gap:1px;height:14px;margin-top:2px}
+.n-cores b{display:block;width:4px;min-height:2px;background:linear-gradient(0deg,#37d39b,#ffb454 60%,#ff5470);border-radius:1px;opacity:.9}
+
+.n-legend{left:14px;bottom:14px;max-width:min(600px,calc(100% - 400px));padding:8px 10px;display:flex;flex-wrap:wrap;gap:4px 6px}
+.n-leg{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 8px;border-radius:20px;cursor:pointer;
+  color:var(--txt);border:1px solid transparent;user-select:none;transition:opacity .15s,background .15s;background:none;font-family:inherit}
+.n-leg:hover{background:rgba(255,255,255,.05)}
+.n-leg b{width:9px;height:9px;border-radius:50%;box-shadow:0 0 8px currentColor}
+.n-leg i{font-style:normal;color:var(--dim);font-size:10.5px}
+.n-leg.off{opacity:.32;text-decoration:line-through}
+
+.n-tools{display:flex;gap:6px;margin-left:auto;min-width:0}
+.n-tools input{width:300px;min-width:0;padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:rgba(15,20,32,.9);color:var(--txt);font:inherit;font-size:13px}
+.n-tools input:focus{outline:none;border-color:var(--acc)}
+.n-btn{min-width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:rgba(15,20,32,.9);color:var(--txt);cursor:pointer;font-size:14px;flex:0 0 auto}
+.n-btn:hover{border-color:var(--acc)}
+.n-btn:focus-visible,.n-leg:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.n-btn.on{background:rgba(91,141,239,.25);border-color:var(--acc);color:#fff}
+
+.n-detail{right:14px;top:128px;bottom:14px;width:340px;overflow:auto;padding:14px}
+.n-dhead{display:flex;align-items:flex-start;gap:10px}
+.n-dhead h3{margin:0;font-size:15px;word-break:break-all}
+.n-dhead .n-btn{margin-left:auto}
+.n-ddot{width:12px;height:12px;border-radius:50%;margin-top:4px;flex:0 0 auto;box-shadow:0 0 12px currentColor}
+.n-dsub{font-size:11.5px;color:var(--mut)}
+.n-dsub .st-bad{color:var(--bad)} .n-dsub .st-warn{color:var(--warn)} .n-dsub .st-off{color:var(--dim)}
+.n-dtable{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}
+.n-dtable td{padding:5px 6px;border-bottom:1px solid rgba(120,150,210,.08);vertical-align:top;word-break:break-all}
+.n-dtable td:first-child{color:var(--mut);width:38%;white-space:nowrap}
+.n-dconn h4{margin:14px 0 6px;font-size:12px;color:var(--mut);font-weight:600}
+.n-dlinks{display:flex;flex-wrap:wrap;gap:4px}
+.n-dlinks a{font-size:11px;padding:3px 8px;border-radius:14px;background:rgba(91,141,239,.12);border:1px solid rgba(91,141,239,.25);cursor:pointer;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--txt)}
+.n-dlinks a:hover{background:rgba(91,141,239,.3)}
+
+.n-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:14px;z-index:2;
+  letter-spacing:.4px;animation:nPulse 1.4s ease-in-out infinite;padding:16px;text-align:center}
+.n-load.err{animation:none;color:var(--bad)}
+@keyframes nPulse{50%{opacity:.4}}
+@media (prefers-reduced-motion:reduce){.n-load{animation:none}}
+.n-tip{position:fixed;z-index:30;pointer-events:none;background:rgba(10,14,24,.92);border:1px solid rgba(120,150,210,.22);
+  border-radius:8px;padding:6px 10px;font-size:12px;display:flex;flex-direction:column;gap:2px;max-width:320px}
+.n-tip span{color:var(--mut);font-size:11px}
+.n-labels{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.n-lab{position:absolute;left:0;top:0;font-size:11px;color:#dfe8f7;text-shadow:0 0 6px #000,0 0 2px #000;white-space:nowrap;opacity:.85}
+.n-credit{position:absolute;right:16px;bottom:12px;z-index:3;font-size:11px;color:var(--dim);text-decoration:none;letter-spacing:.3px}
+.n-credit:hover{color:var(--mut)}
+
+@media(max-width:900px){
+  .n-detail{left:14px;width:auto;top:auto;height:45%}
+  .n-tools{margin-left:0;width:100%}
+  .n-tools input{flex:1;width:auto}
+  .n-legend{max-width:calc(100% - 28px);bottom:34px}
+  .n-stat{min-width:70px;padding:2px 8px}
+}
+@media(max-width:520px){
+  .n-top,.n-legend,.n-detail{left:8px;right:8px}
+  .n-top{top:8px;padding:8px 10px}
+  .n-legend{max-height:30vh;overflow:auto}
+  .n-stat:nth-child(n+5){display:none}
+}

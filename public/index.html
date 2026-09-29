@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Neural Map</title>
+  <meta name="description" content="Your whole Linux server as a live 3D neural network.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app" class="neural-wrap">
+    <canvas id="nCanvas"></canvas>
+    <div class="n-hud n-top">
+      <div class="n-row1">
+        <div class="n-title">🧠 Neural Map <span id="nHost" class="n-dim"></span></div>
+        <div class="n-tools">
+          <input id="nSearch" placeholder="Search: process, port, IP, table…  ( / )" autocomplete="off" spellcheck="false">
+          <button class="n-btn" id="nReset" title="Fit the whole network (F)">⛶</button>
+          <button class="n-btn on" id="nSpin" title="Auto-rotate (R)">↻</button>
+          <button class="n-btn" id="nLabels" title="Labels (L)">A</button>
+        </div>
+      </div>
+      <div id="nStats" class="n-stats"></div>
+    </div>
+    <div class="n-hud n-legend" id="nLegend"></div>
+    <div class="n-hud n-detail hidden" id="nDetail"></div>
+    <div class="n-load" id="nLoad">Building the map…</div>
+    <div class="n-tip hidden" id="nTip"></div>
+    <a class="n-credit" href="https://github.com/Zodiachz/vps-neural-map" target="_blank" rel="noopener">vps-neural-map</a>
+  </main>
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/d3-force-3d.min.js"></script>
+  <script src="demo.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

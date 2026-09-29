@@ -1,0 +1,21 @@
+name: check
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm run check
+      - name: smoke test on the runner itself
+        run: |
+          node bin/vps-neural-map.js --port 7777 --token ci-smoke-token-123 &
+          sleep 4
+          curl -sf -H "Authorization: Bearer ci-smoke-token-123" http://127.0.0.1:7777/api/graph | node -e "const g=JSON.parse(require('fs').readFileSync(0));if(!g.ok||g.nodes.length<50)process.exit(1);console.log(g.nodes.length+' nodes, errors:',g.errors)"
+          curl -sf -H "Authorization: Bearer ci-smoke-token-123" http://127.0.0.1:7777/api/pulse > /dev/null
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:7777/api/graph)" = 401
