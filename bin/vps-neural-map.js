@@ -53,7 +53,7 @@ function parseArgs(argv) {
       default: fail(`unknown option ${a}  (see --help)`);
     }
   }
-  if (!(o.port > 0 && o.port < 65536)) fail('invalid --port');
+  if (!(Number.isInteger(o.port) && o.port > 0 && o.port < 65536)) fail('invalid --port (expected an integer 1-65535)');
   return o;
 }
 function fail(msg) { console.error('vps-neural-map: ' + msg); process.exit(2); }
